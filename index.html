@@ -1,0 +1,113 @@
+<!-- 
+    Ip calculator and Ip Calculation Practise
+
+    Author: WattoX00
+    Date:   03/03/2024
+ -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP Subnet Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <button id="switchButton" onclick="toggleSections()">Switch to IP Calculator</button>
+    <h1 id="h1Text">Welcome To my Website</h1>
+<!-- Calculator Code -->
+    <div id="ipCalculatorSection">
+        <form id="subnetForm">
+            <label for="ipInput">Enter IP and Subnet Mask:</label>
+            <input type="text" id="ipInput" autocomplete="off" placeholder="e.g. 192.168.100.1/24" required>
+        </form>
+        <pre id="resultOutput"></pre>
+    </div>
+<!-- Practise Code -->
+    <div id="practiceProgramSection" style="display: none;">
+        <p>Randomly generated IP: <span id="randomlyGeneratedIP"></span></p>
+        <button id="generateButton" onclick="generateRandomIP()">Generate</button>
+        <div id="classButtons">
+            <button class="classButton" id="classCButton" onclick="toggleClass('C')">Class C IP off</button>
+<button class="classButton" id="classBButton" onclick="toggleClass('B')">Class B IP off</button>
+<button class="classButton" id="classAButton" onclick="toggleClass('A')">Class A IP off</button>
+<button class="classButton" id="classUnderButton" onclick="toggleClass('Under')">Class under IP off</button>
+<button id="checkResultButton" onclick="checkResults()">Check Result</button>
+
+        </div>
+        <div id="practiceTable">
+            <div class="practice-row">
+                <div class="practice-cell">
+                    <label for="networkDecimal1">Network: Last Octet Decimal</label>
+                    <input type="text" id="networkDecimal1" autocomplete="off" placeholder="Last Octet Decimal">
+                </div>
+                <div class="practice-cell">
+                    <label for="networkBinary1">Network: Last Octet Binary</label>
+                    <input type="text" id="networkBinary1" autocomplete="off" placeholder="Last Octet Binary">
+                </div>
+                <div class="practice-cell">
+                    <label for="networkFullIp1">Network: Full IP</label>
+                    <input type="text" id="networkFullIp1" autocomplete="off" placeholder="Full IP">
+                </div>
+            </div>
+            <div class="practice-row">
+                <div class="practice-cell">
+                    <label for="broadcastDecimal1">Broadcast: Last Octet Decimal</label>
+                    <input type="text" id="broadcastDecimal1" autocomplete="off" placeholder="Last Octet Decimal">
+                </div>
+                <div class="practice-cell">
+                    <label for="broadcastBinary1">Broadcast: Last Octet Binary</label>
+                    <input type="text" id="broadcastBinary1" autocomplete="off" placeholder="Last Octet Binary">
+                </div>
+                <div class="practice-cell">
+                    <label for="broadcastFullIp1">Broadcast: Full IP</label>
+                    <input type="text" id="broadcastFullIp1" autocomplete="off" placeholder="Full IP">
+                </div>
+            </div>
+            <div class="practice-row">
+                <div class="practice-cell">
+                    <label for="firstIPDecimal1">First IP: Last Octet Decimal</label>
+                    <input type="text" id="firstIPDecimal1" autocomplete="off" placeholder="Last Octet Decimal">
+                </div>
+                <div class="practice-cell">
+                    <label for="firstIPBinary1">First IP: Last Octet Binary</label>
+                    <input type="text" id="firstIPBinary1" autocomplete="off" placeholder="Last Octet Binary">
+                </div>
+                <div class="practice-cell">
+                    <label for="firstIPFullIp1">First IP: Full IP</label>
+                    <input type="text" id="firstIPFullIp1" autocomplete="off" placeholder="Full IP">
+                </div>
+            </div>
+            <div class="practice-row">
+                <div class="practice-cell">
+                    <label for="lastIPDecimal1">Last IP: Last Octet Decimal</label>
+                    <input type="text" id="lastIPDecimal1" autocomplete="off" placeholder="Last Octet Decimal">
+                </div>
+                <div class="practice-cell">
+                    <label for="lastIPBinary1">Last IP: Last Octet Binary</label>
+                    <input type="text" id="lastIPBinary1" autocomplete="off" placeholder="Last Octet Binary">
+                </div>
+                <div class="practice-cell">
+                    <label for="lastIPFullIp1">Last IP: Full IP</label>
+                    <input type="text" id="lastIPFullIp1" autocomplete="off" placeholder="Full IP">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footerContainer">
+        <div class="footer-section">
+            <p>Every Right Reserved &copy; 2024</p>
+        </div>
+        <div class="footer-section">
+            <p>Support Me:</p>
+            <p><a href="https://www.paypal.com/paypalme/wattox" target="_blank">PayPal</a></p>
+        </div>
+    </div>
+    <div id="footerArrow">&#x25BC;</div>
+<script src="script.js"></script>
+</body>
+</html>
+

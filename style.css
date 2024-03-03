@@ -1,0 +1,139 @@
+/*
+    Ip calculator and Ip Calculation Practise
+
+    Author: WattoX00
+    Date:   03/03/2024
+*/
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #000;
+    color: #fff;
+}
+a {
+    text-decoration: none;
+    color: #fff;
+}
+#ipInput {
+    font-size: 1vw;
+}
+
+pre {
+    white-space: pre-wrap;
+    font-size: 1vw;
+    font-family: monospace;
+}
+
+#switchButton {
+    margin-top: 10px;
+    padding: 5px 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+#ipCalculatorSection {
+    display: none;
+}
+#practiceTable {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.practice-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.practice-cell {
+    display: flex;
+    flex-direction: column;
+}
+
+.practice-cell input {
+    margin-bottom: 5px;
+}
+#classButtons {
+    margin-top: 20px;
+}
+
+.classButton {
+    margin-right: 10px;
+    font-size: 16px;
+}
+button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    color: #ffffff;
+    background: linear-gradient(to bottom, #3498db 50%, transparent 50%);
+    background-size: 100% 200%;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    transition: background-position 0.5s, color 0.3s;
+}
+
+button:hover {
+    background-position: 0% 100%;
+    color: #ffffff;
+}
+input {
+    width: 200px;
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #3498db;
+    border-radius: 5px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.7);
+}
+#footerContainer {
+bottom: 0;
+left: 0;
+background-color: #333;
+color: #fff;
+text-align: center;
+transition: transform 0.3s ease;
+transform: translateY(100%);
+display: flex;
+justify-content: space-between;
+padding: 20px;
+position: fixed;
+z-index: 1;
+width: 100%;
+}
+
+#footerContainer.active {
+transform: translateY(0);
+}
+
+#footerArrow {
+position: fixed;
+bottom: 10px;
+left: 50%;
+transform: translateX(-50%);
+font-size: 20px;
+color: #fff;
+cursor: pointer;
+transition: opacity 0.3s ease;
+}
+
+#footerArrow.hidden {
+opacity: 0;
+pointer-events: none;
+}
+
+.footer-section {
+text-align: center;
+}
+
+.footer-section p {
+margin: 0 50px 0 20px;
+}
