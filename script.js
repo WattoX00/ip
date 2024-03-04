@@ -170,7 +170,7 @@ while (true) {
 if (ip[2] >= steps * subnet_multiplier && ip[2] <= (steps * (subnet_multiplier + 1)) - 1) {
     const network = steps * subnet_multiplier;
     const broadcast = (steps * (subnet_multiplier + 1)) - 1;
-    const first_ip = network + 1;
+    const first_ip = 1;
     const last_ip = 254;
 
     const networkAddress = ip.slice(0, 2).concat([network, 0]);
