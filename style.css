@@ -95,45 +95,45 @@ input:focus {
     box-shadow: 0 0 5px rgba(52, 152, 219, 0.7);
 }
 #footerContainer {
-bottom: 0;
-left: 0;
-background-color: #333;
-color: #fff;
-text-align: center;
-transition: transform 0.3s ease;
-transform: translateY(100%);
-display: flex;
-justify-content: space-between;
-padding: 20px;
-position: fixed;
-z-index: 1;
-width: 100%;
+    bottom: 0;
+    left: 0;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    transition: transform 0.3s ease;
+    transform: translateY(100%);
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    position: fixed;
+    z-index: 1;
+    width: 100%;
 }
 
 #footerContainer.active {
-transform: translateY(0);
+    transform: translateY(0);
 }
 
 #footerArrow {
-position: fixed;
-bottom: 10px;
-left: 50%;
-transform: translateX(-50%);
-font-size: 20px;
-color: #fff;
-cursor: pointer;
-transition: opacity 0.3s ease;
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
 }
 
 #footerArrow.hidden {
-opacity: 0;
-pointer-events: none;
+    opacity: 0;
+    pointer-events: none;
 }
 
 .footer-section {
-text-align: center;
+    text-align: center;
 }
 
 .footer-section p {
-margin: 0 50px 0 20px;
+    margin: 0 50px 0 20px;
 }

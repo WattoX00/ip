@@ -14,28 +14,23 @@ subnetForm.addEventListener('submit', function (e) {
     calculateSubnet();
 });
 const footerContainer = document.getElementById('footerContainer');
-const footerArrow = document.getElementById('footerArrow');
-let isFooterVisible = false;
+    const footerArrow = document.getElementById('footerArrow');
+    let isFooterVisible = true;
 
-footerArrow.addEventListener('click', function () {
-isFooterVisible = !isFooterVisible;
-toggleFooterVisibility();
-});
+    footerArrow.addEventListener('mouseenter', function () {
+        isFooterVisible = !isFooterVisible;
+        toggleFooterVisibility();
+    });
 
-footerContainer.addEventListener('mouseenter', function () {
-isFooterVisible = true;
-toggleFooterVisibility();
-});
+    footerContainer.addEventListener('click', function () {
+        isFooterVisible = false;
+        toggleFooterVisibility();
+    });
 
-footerContainer.addEventListener('mouseleave', function () {
-isFooterVisible = false;
-toggleFooterVisibility();
-});
-
-function toggleFooterVisibility() {
-footerContainer.classList.toggle('active', isFooterVisible);
-footerArrow.classList.toggle('hidden', isFooterVisible);
-}
+    function toggleFooterVisibility() {
+        footerContainer.classList.toggle('active', isFooterVisible);
+        footerArrow.classList.toggle('hidden', isFooterVisible);
+    }
 function calculateSubnet() {
 try {
 const inputField = document.getElementById('ipInput');
@@ -55,7 +50,7 @@ if (ip.some(octet => octet < 0 || octet > 255)) {
     return;
 }
 
-if (mask >= 24 && mask <= 32) {
+if (mask >= 24 && mask <= 30) {
     c_ip(ip, mask);
 } else if (mask >= 16 && mask <= 23) {
     b_ip(ip, mask);
