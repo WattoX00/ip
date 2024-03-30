@@ -15,12 +15,12 @@ a {
     color: #fff;
 }
 #ipInput {
-    font-size: 1vw;
+    font-size: 2vw;
 }
 
 pre {
     white-space: pre-wrap;
-    font-size: 1vw;
+    font-size: 2vw;
     font-family: monospace;
 }
 
@@ -32,6 +32,9 @@ pre {
 }
 
 #ipCalculatorSection {
+    display: none;
+}
+#practiceProgramSection{
     display: none;
 }
 #practiceTable {
@@ -55,7 +58,7 @@ pre {
     margin-bottom: 5px;
 }
 #classButtons {
-    margin-top: 20px;
+    margin: 20px 0;
 }
 
 .classButton {
@@ -136,4 +139,25 @@ input:focus {
 
 .footer-section p {
     margin: 0 50px 0 20px;
+}
+@media only screen and (max-width: 768px) {
+    #footerContainer {
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 0;
+    }
+    .footer-section {
+        width: 100%;
+        text-align: center;
+        margin: 0 10px;
+    }    
+    body:hover #footerContainer {
+        display: block;
+    }
+    pre {
+        font-size: 20px;
+    }
+    input {
+        font-size:30px;
+    }
 }

@@ -31,42 +31,47 @@ const footerContainer = document.getElementById('footerContainer');
         footerContainer.classList.toggle('active', isFooterVisible);
         footerArrow.classList.toggle('hidden', isFooterVisible);
     }
-function calculateSubnet() {
-try {
-const inputField = document.getElementById('ipInput');
-const resultOutput = document.getElementById('resultOutput');
-const rawIp = inputField.value.trim();
+    function calculateSubnet() {
+        try {
+            const inputField = document.getElementById('ipInput');
+            const resultOutput = document.getElementById('resultOutput');
+            const rawIp = inputField.value.trim();
+            if (!/^[0-9.\/]+$/.test(rawIp)) {
+                resultOutput.textContent = "Invalid characters in input. Use only numbers, dots, and forward slash.";
+                return;
+            }
 
-if (!/^[0-9.\/]+$/.test(rawIp)) {
-    resultOutput.textContent = "Invalid characters in input. Use only numbers, dots, and forward slash.";
-    return;
-}
-
-const mask = parseInt(rawIp.split("/")[1]);
-const ip = rawIp.split("/")[0].split(".").map(Number);
-
-if (ip.some(octet => octet < 0 || octet > 255)) {
-    resultOutput.textContent = "Invalid IP address. Octet value must be between 0 and 255.";
-    return;
-}
-
-if (mask >= 24 && mask <= 30) {
-    c_ip(ip, mask);
-} else if (mask >= 16 && mask <= 23) {
-    b_ip(ip, mask);
-} else if (mask >= 8 && mask <= 15) {
-    a_ip(ip, mask);
-} else if (mask >= 0 && mask <= 7) {
-    under_ip(ip, mask);
-} else {
-    resultOutput.textContent = "Invalid subnet mask.";
-}
-} catch (error) {
-console.error(error);
-resultOutput.textContent = "Error occurred. Please check the input.";
-}
-}
-
+            if (rawIp.includes(".")) {
+                const parts = rawIp.split("/");
+                const ip = parts[0].split(".").map(Number);
+                const mask = parseInt(parts[1]);
+                if (ip.some(octet => octet < 0 || octet > 255)) {
+                    resultOutput.textContent = "Invalid IP address. Octet value must be between 0 and 255.";
+                    return;
+                }
+    
+                if (mask >= 24 && mask <= 30) {
+                    c_ip(ip, mask);
+                } else if (mask >= 16 && mask <= 23) {
+                    b_ip(ip, mask);
+                } else if (mask >= 8 && mask <= 15) {
+                    a_ip(ip, mask);
+                } else if (mask >= 0 && mask <= 7) {
+                    under_ip(ip, mask);
+                } else {
+                    resultOutput.textContent = "Invalid subnet mask.";
+                }
+            } else {
+                
+                const mask = parseInt(rawIp);
+                only_mask(mask);
+            }
+        } catch (error) {
+            console.error(error);
+            resultOutput.textContent = "Error occurred. Please check the input.";
+        }
+    }
+    
 function under_ip(ip, mask) {
 const subnet_multiplier = Math.floor(mask / 8);
 const remaining_bits = mask % 8;
@@ -219,10 +224,29 @@ while (true) {
 }
 }
 
+function only_mask(mask) {
+    const subnetMask = mask;
+    const numberOfHostBits = 32 - subnetMask;
+    const totalHosts = Math.pow(2, numberOfHostBits);
+
+    if (numberOfHostBits >= 0) {
+        const decimalSubnetMask = calculateDecimalSubnetMask(subnetMask);
+        const decimalWildcardMask = calculateDecimalWildcardMask(subnetMask);
+
+        let resultText = `Subnet Mask:     ${decimalSubnetMask}\n`;
+        resultText += `Wildcard Mask:   ${decimalWildcardMask}\n`;
+        resultText += `Total Hosts: ${totalHosts}`;
+
+        resultOutput.innerHTML = resultText;
+    } else {
+        resultOutput.textContent = "Invalid subnet mask.";
+    }
+}
+
 function displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary, mask) {
 const subnetMask = mask;
 const numberOfHostBits = 32 - subnetMask;
-const totalHosts = Math.pow(2, numberOfHostBits) - 2;
+const totalHosts = Math.pow(2, numberOfHostBits);
 
 if (numberOfHostBits >= 0) {
 const decimalSubnetMask = calculateDecimalSubnetMask(subnetMask);
