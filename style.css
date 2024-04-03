@@ -15,7 +15,7 @@ a {
     color: #fff;
 }
 #ipInput {
-    font-size: 1vw;
+    font-size: 1.5vw;
 }
 
 pre {
@@ -157,7 +157,7 @@ input:focus {
     pre {
         font-size: 20px;
     }
-    input {
-        font-size:30px;
+    #ipInput {
+        font-size: 6vw;
     }
 }
