@@ -14,7 +14,22 @@ Live site: **https://wattox00.github.io/ip**
   - Click **Check Result** to verify your answers.
 - **Footer**: Click the grey footer box to hide/show it; the small arrow toggles visibility as well.
 
-## License
 
-This project is licensed under the [GNU General Public License v3.0
-](LICENSE) License.
+## ❤️ Support
+
+If this project saved you time, taught you something, or made your day a little easier,
+you can support its development here:
+
+👉 **[Buy me a coffee via PayPal](https://www.paypal.com/paypalme/wattox)**
+
+Your support helps keep the project:
+- Actively maintained
+- Continuously improved
+- Free and open source
+
+Thanks for being part of the community 🤝
+
+## 📄 License
+
+This project is licensed under the **GNU General Public License v3.0**.  
+See the [LICENSE](LICENSE) file for full details.
