@@ -1,8 +1,8 @@
 # IP Subnet Calculator & Practice
 
-Live site: **https://wattox00.github.io/ip**
+🌐 Live site: **https://wattox00.github.io/ip**
 
-## How to use the app
+## 🚀 How to use the app
 - **Switch sections**: Click the **"Switch to IP Calculator"** button to toggle between the Calculator and Practice sections.
 - **IP Calculator**:
   - Enter an address in CIDR format, e.g. `192.168.100.1/24` in the input field and press Enter (or the UI will calculate automatically).
