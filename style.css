@@ -156,19 +156,14 @@ input:focus {
     background: linear-gradient(180deg, var(--bg-1), var(--bg-2));
     color: var(--text);
     text-align: center;
-
     transition: transform 0.3s ease;
     transform: translateY(100%);
-
     display: flex;
     justify-content: space-between;
-
     padding: 20px;
-
     position: fixed;
     z-index: 1;
     width: 100%;
-
     border-top: 1px solid rgba(255,255,255,0.06);
 }
 
