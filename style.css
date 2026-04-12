@@ -153,8 +153,8 @@ input:focus {
 #footerContainer {
     bottom: 0;
     left: 0;
-    background-color: #333;
-    color: #fff;
+    background-color: rgb(36, 39, 41);
+    color: var(--footer-text);
     text-align: center;
     transition: transform 0.3s ease;
     transform: translateY(100%);
@@ -176,7 +176,7 @@ input:focus {
     left: 50%;
     transform: translateX(-50%);
     font-size: 20px;
-    color: #fff;
+    color: var(--footer-text);
     cursor: pointer;
     transition: opacity 0.3s ease;
 }
@@ -194,6 +194,18 @@ input:focus {
     margin: 0 50px 0 20px;
 }
 
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .fade-in {
+    animation: fadeIn 2s ease-in-out; 
+  }
 
 @media (max-width:900px){
     .container {
