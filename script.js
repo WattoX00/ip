@@ -2,478 +2,300 @@
     Ip calculator and Ip Calculation Practise
 
     Author: WattoX00
-    Date:   03/03/2024 
+    Date:   03/03/2024
 */
-const subnetForm = document.getElementById('subnetForm');
-const ipCalculatorSection = document.getElementById('ipCalculatorSection');
-const practiceProgramSection = document.getElementById('practiceProgramSection');
-const resultOutput = document.getElementById('resultOutput');
 
-subnetForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    calculateSubnet();
-});
-const footerContainer = document.getElementById('footerContainer');
-    const footerArrow = document.getElementById('footerArrow');
-    let isFooterVisible = true;
+/* ================= Core subnet math (pure functions) ================= */
 
-    footerArrow.addEventListener('click', function () {
-        isFooterVisible = !isFooterVisible;
-        toggleFooterVisibility();
-    });
+const pad8 = n => n.toString(2).padStart(8, '0');
+const toInt = a => (((a[0] << 24) | (a[1] << 16) | (a[2] << 8) | a[3]) >>> 0);
+const toArr = n => [n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255];
 
-    footerContainer.addEventListener('click', function () {
-        isFooterVisible = false;
-        toggleFooterVisibility();
-    });
+function maskToInt(mask) {
+    return mask === 0 ? 0 : (0xFFFFFFFF << (32 - mask)) >>> 0;
+}
 
-    function toggleFooterVisibility() {
-        footerContainer.classList.toggle('active', isFooterVisible);
-        footerArrow.classList.toggle('hidden', isFooterVisible);
+function calc(ip, mask) {
+    const maskInt = maskToInt(mask);
+    const wildInt = (~maskInt) >>> 0;
+    const net = (toInt(ip) & maskInt) >>> 0;
+    const bc = (net | wildInt) >>> 0;
+
+    let first, last, usable;
+    if (mask === 32) { first = last = net; usable = 1; }
+    else if (mask === 31) { first = net; last = bc; usable = 2; }
+    else { first = net + 1; last = bc - 1; usable = Math.pow(2, 32 - mask) - 2; }
+
+    return {
+        mask,
+        network: toArr(net),
+        broadcast: toArr(bc),
+        first: toArr(first),
+        last: toArr(last),
+        subnetMask: toArr(maskInt),
+        wildcard: toArr(wildInt),
+        total: Math.pow(2, 32 - mask),
+        usable
+    };
+}
+
+/* Returns {type:'full'|'mask'|'error', ...} */
+function parseInput(raw) {
+    const s = raw.trim();
+    if (!s) return { type: 'empty' };
+    if (!/^[0-9.\/]+$/.test(s)) {
+        return { type: 'error', message: 'Invalid characters in input. Use only numbers, dots, and a forward slash.' };
     }
-    function calculateSubnet() {
-        try {
-            const inputField = document.getElementById('ipInput');
-            const resultOutput = document.getElementById('resultOutput');
-            const rawIp = inputField.value.trim();
-            if (!/^[0-9.\/]+$/.test(rawIp)) {
-                resultOutput.textContent = "Invalid characters in input. Use only numbers, dots, and forward slash.";
-                return;
-            }
 
-            if (rawIp.includes(".")) {
-                const parts = rawIp.split("/");
-                const ip = parts[0].split(".").map(Number);
-                const mask = parseInt(parts[1]);
-                if (ip.some(octet => octet < 0 || octet > 255)) {
-                    resultOutput.textContent = "Invalid IP address. Octet value must be between 0 and 255.";
-                    return;
-                }
-    
-                if (mask >= 24 && mask <= 30) {
-                    c_ip(ip, mask);
-                } else if (mask >= 16 && mask <= 23) {
-                    b_ip(ip, mask);
-                } else if (mask >= 8 && mask <= 15) {
-                    a_ip(ip, mask);
-                } else if (mask >= 0 && mask <= 7) {
-                    under_ip(ip, mask);
-                } else {
-                    resultOutput.textContent = "Invalid subnet mask.";
-                }
-            } else {
-                
-                const mask = parseInt(rawIp);
-                only_mask(mask);
-            }
-        } catch (error) {
-            console.error(error);
-            resultOutput.textContent = "Error occurred. Please check the input.";
+    if (s.includes('.')) {
+        const parts = s.split('/');
+        const octets = parts[0].split('.');
+        if (octets.length !== 4 || octets.some(o => o === '')) {
+            return { type: 'error', message: 'An IP address needs four octets, e.g. 192.168.100.1/24.' };
         }
+        const ip = octets.map(Number);
+        if (ip.some(o => !Number.isInteger(o) || o < 0 || o > 255)) {
+            return { type: 'error', message: 'Invalid IP address. Each octet must be between 0 and 255.' };
+        }
+        if (parts.length !== 2 || parts[1] === '') {
+            return { type: 'error', message: 'Add a subnet mask, e.g. /24.' };
+        }
+        const mask = Number(parts[1]);
+        if (!Number.isInteger(mask) || mask < 0 || mask > 32) {
+            return { type: 'error', message: 'Invalid subnet mask. Use a value from 0 to 32.' };
+        }
+        return { type: 'full', ip, mask };
     }
-    
-function under_ip(ip, mask) {
-const subnet_multiplier = Math.floor(mask / 8);
-const remaining_bits = mask % 8;
-let octet_decimal = 0;
 
-for (let i = 0; i < remaining_bits; i++) {
-octet_decimal += Math.pow(2, 7 - i);
-}
-
-const steps = 256 - octet_decimal;
-let index = subnet_multiplier;
-
-while (true) {
-if (index >= ip.length) {
-    const network = steps * subnet_multiplier;
-    const broadcast = (steps * subnet_multiplier) + (Math.pow(2, 8 - remaining_bits)) - 1;
-    const first_ip = 1;
-    const last_ip = 254;
-
-    const networkAddress = [network, 0, 0, 0];
-    const broadcastAddress = [broadcast, 255, 255, 255];
-
-    const networkBinary = networkAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const broadcastBinary = broadcastAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const firstIpBinary = ('00000000' + first_ip.toString(2)).slice(-8);
-    const lastIpBinary = ('00000000' + last_ip.toString(2)).slice(-8);
-
-    displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary,mask);
-    break;
-}
-
-const current_octet = ip[index];
-if (current_octet >= steps * subnet_multiplier && current_octet <= (steps * (subnet_multiplier + 1)) - 1) {
-    index++;
-} else {
-    const network = steps * subnet_multiplier;
-    const broadcast = (steps * (subnet_multiplier + 1)) - 1;
-    const first_ip = 1;
-    const last_ip = 254;
-
-    const networkAddress = [network, 0, 0, 0];
-    const broadcastAddress = [broadcast, 255, 255, 255];
-
-    const networkBinary = networkAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const broadcastBinary = broadcastAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const firstIpBinary = ('00000000' + first_ip.toString(2)).slice(-8);
-    const lastIpBinary = ('00000000' + last_ip.toString(2)).slice(-8);
-
-    displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary,mask);
-    break;
-}
-}
-}
-
-function a_ip(ip, mask) {
-const bit_needed = mask - 8;
-let octet_decimal = 0;
-
-for (let i = 0; i < bit_needed; i++) {
-octet_decimal += Math.pow(2, 7 - i);
-}
-
-const steps = 256 - octet_decimal;
-const first_octet = ip[0];
-let subnet_multiplier = 0;
-
-while (true) {
-if (first_octet >= steps * subnet_multiplier && first_octet <= (steps * (subnet_multiplier + 1)) - 1) {
-    const network = steps * subnet_multiplier;
-    const broadcast = (steps * (subnet_multiplier + 1)) - 1;
-    const first_ip = 1;
-    const last_ip = 254;
-
-    const networkAddress = ip.slice(0, 1).concat([network, 0, 0]);
-    const broadcastAddress = ip.slice(0, 1).concat([broadcast, 255, 255]);
-
-    const networkBinary = networkAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const broadcastBinary = broadcastAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const firstIpBinary = ('00000000' + first_ip.toString(2)).slice(-8);
-    const lastIpBinary = ('00000000' + last_ip.toString(2)).slice(-8);
-
-    displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary,mask);
-    break;
-} else {
-    subnet_multiplier++;
-}
-}
-}
-
-function b_ip(ip, mask) {
-const bit_needed = mask - 16;
-const steps = Math.pow(2, 8 - bit_needed);
-let subnet_multiplier = 0;
-
-while (true) {
-if (ip[2] >= steps * subnet_multiplier && ip[2] <= (steps * (subnet_multiplier + 1)) - 1) {
-    const network = steps * subnet_multiplier;
-    const broadcast = (steps * (subnet_multiplier + 1)) - 1;
-    const first_ip = 1;
-    const last_ip = 254;
-
-    const networkAddress = ip.slice(0, 2).concat([network, 0]);
-    const broadcastAddress = ip.slice(0, 2).concat([broadcast, 255]);
-
-    const networkBinary = networkAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const broadcastBinary = broadcastAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-    const firstIpBinary = ('00000000' + first_ip.toString(2)).slice(-8);
-    const lastIpBinary = ('00000000' + last_ip.toString(2)).slice(-8);
-
-    displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary,mask);
-    break;
-} else {
-    subnet_multiplier++;
-}
-}
-}
-
-function c_ip(ip, mask) {
-const bit_needed = mask - 24;
-let octet_decimal = 0;
-
-for (let i = 0; i < bit_needed; i++) {
-    octet_decimal += Math.pow(2, 7 - i);
-}
-
-const steps = 256 - octet_decimal;
-const octet = ip[3];
-let subnet_multiplier = 0;
-
-while (true) {
-    if (octet >= steps * subnet_multiplier && octet <= (steps * (subnet_multiplier + 1)) - 1) {
-        const network = steps * subnet_multiplier;
-        const broadcast = (steps * (subnet_multiplier + 1)) - 1;
-        const first_ip = network + 1;
-        const last_ip = broadcast - 1;
-
-        const networkAddress = ip.slice(0, 3).concat([network]);
-        const broadcastAddress = ip.slice(0, 3).concat([broadcast]);
-
-        const networkBinary = networkAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-        const broadcastBinary = broadcastAddress.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-        const firstIpBinary = ('00000000' + first_ip.toString(2)).slice(-8);
-        const lastIpBinary = ('00000000' + last_ip.toString(2)).slice(-8);
-
-        displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary,mask);
-        break;
-    } else {
-        subnet_multiplier++;
+    const m = s.replace('/', '');
+    const mask = Number(m);
+    if (m === '' || s.split('/').length > 2 || !Number.isInteger(mask) || mask < 0 || mask > 32) {
+        return { type: 'error', message: 'Invalid subnet mask. Use a value from 0 to 32.' };
     }
-}
-}
-
-function only_mask(mask) {
-    const subnetMask = mask;
-    const numberOfHostBits = 32 - subnetMask;
-    const totalHosts = Math.pow(2, numberOfHostBits);
-
-    if (numberOfHostBits >= 0) {
-        const decimalSubnetMask = calculateDecimalSubnetMask(subnetMask);
-        const decimalWildcardMask = calculateDecimalWildcardMask(subnetMask);
-
-        let resultText = `Subnet Mask:     ${decimalSubnetMask}\n`;
-        resultText += `Wildcard Mask:   ${decimalWildcardMask}\n`;
-        resultText += `Total Hosts: ${totalHosts}`;
-
-        resultOutput.innerHTML = resultText;
-    } else {
-        resultOutput.textContent = "Invalid subnet mask.";
-    }
+    return { type: 'mask', mask };
 }
 
-function displayResult(networkAddress, broadcastAddress, networkBinary, broadcastBinary, first_ip, last_ip, firstIpBinary, lastIpBinary, mask) {
-const subnetMask = mask;
-const numberOfHostBits = 32 - subnetMask;
-const totalHosts = Math.pow(2, numberOfHostBits);
-
-if (numberOfHostBits >= 0) {
-const decimalSubnetMask = calculateDecimalSubnetMask(subnetMask);
-
-const decimalWildcardMask = calculateDecimalWildcardMask(subnetMask);
-
-let resultText = `Network:   ${formatIpAndBinary(networkAddress, networkBinary)}\nBroadcast: ${formatIpAndBinary(broadcastAddress, broadcastBinary)}\nFirst IP:  ${formatIpAndBinary(networkAddress.slice(0, 3).concat([first_ip]), firstIpBinary)}\nLast IP:   ${formatIpAndBinary(broadcastAddress.slice(0, 3).concat([last_ip]), lastIpBinary)}\n`;
-
-resultText += `Subnet Mask:     ${(decimalSubnetMask)}\n`;
-resultText += `Wildcard Mask:   ${decimalWildcardMask}\n`;
-
-resultText += `Total Hosts: ${totalHosts}`;
-
-resultOutput.innerHTML = resultText;
-} else {
-resultOutput.textContent = "Invalid subnet mask.";
-}
+/* Expected answers for the practice mode */
+function calculateExpectedResults(ipArray, mask) {
+    const r = calc(ipArray, mask);
+    const lo = a => a[3];
+    return {
+        networkDecimal: String(lo(r.network)),
+        networkBinary: pad8(lo(r.network)),
+        networkFullIp: r.network.join('.'),
+        broadcastDecimal: String(lo(r.broadcast)),
+        broadcastBinary: pad8(lo(r.broadcast)),
+        broadcastFullIp: r.broadcast.join('.'),
+        firstIPDecimal: String(lo(r.first)),
+        firstIPBinary: pad8(lo(r.first)),
+        firstIPFullIp: r.first.join('.'),
+        lastIPDecimal: String(lo(r.last)),
+        lastIPBinary: pad8(lo(r.last)),
+        lastIPFullIp: r.last.join('.')
+    };
 }
 
-function calculateDecimalSubnetMask(subnetMask) {
-const binarySubnetMask = '1'.repeat(subnetMask) + '0'.repeat(32 - subnetMask);
-const decimalSubnetMask = [];
-for (let i = 0; i < 32; i += 8) {
-const octet = parseInt(binarySubnetMask.slice(i, i + 8), 2);
-decimalSubnetMask.push(octet);
-}
-return decimalSubnetMask.join('.');
-}
+const CLASS_RANGES = {
+    C: [24, 30],
+    B: [16, 23],
+    A: [8, 15],
+    Under: [0, 7]
+};
 
-function calculateDecimalWildcardMask(subnetMask) {
-const binaryWildcardMask = '0'.repeat(subnetMask) + '1'.repeat(32 - subnetMask);
-const decimalWildcardMask = [];
-for (let i = 0; i < 32; i += 8) {
-const octet = parseInt(binaryWildcardMask.slice(i, i + 8), 2);
-decimalWildcardMask.push(octet);
-}
-return decimalWildcardMask.join('.');
-}
-
-function formatIpAndBinary(ipArray, binaryArray) {
-const ip = ipArray.join('.');
-const binary = ipArray.map(octet => ('00000000' + octet.toString(2)).slice(-8)).join('.');
-const spaceWidth = 20;
-const padding = ' '.repeat(spaceWidth - ip.length - 1);
-return `${ip}${padding}Binary: ${binary}`;
-}
-
-function toggleSections() {
-const switchButton = document.getElementById('switchButton');
-const h1Text = document.getElementById('h1Text');
-
-if (ipCalculatorSection.style.display === 'none' || ipCalculatorSection.style.display === '') {
-    ipCalculatorSection.style.display = 'block';
-    practiceProgramSection.style.display = 'none';
-    resultOutput.textContent = '';
-    switchButton.textContent = 'Switch to IP Practise';
-    h1Text.textContent = 'IP Subnet Calculator (A, B, C)';
-} else {
-    ipCalculatorSection.style.display = 'none';
-    practiceProgramSection.style.display = 'block';
-    switchButton.textContent = 'Switch to IP Calculator';
-    h1Text.textContent = 'IP Calculation Practice';
-}
-}
-
-function toggleClass(ipClass) {
-const classCButton = document.getElementById('classCButton');
-const classBButton = document.getElementById('classBButton');
-const classAButton = document.getElementById('classAButton');
-const classUnderButton = document.getElementById('classUnderButton');
-
-if (ipClass === 'C') {
-toggleButtonState(classCButton);
-} else if (ipClass === 'B') {
-toggleButtonState(classBButton);
-} else if (ipClass === 'A') {
-toggleButtonState(classAButton);
-} else if (ipClass === 'Under') {
-toggleButtonState(classUnderButton);
-}
-}
-
-function toggleButtonState(button) {
-const isOn = button.textContent.includes('on');
-toggleAllClassesOff();
-if (isOn) {
-button.textContent = button.textContent.replace('on', 'off');
-} else {
-button.textContent = button.textContent.replace('off', 'on');
-}
-}
-
-function toggleAllClassesOff() {
-const classCButton = document.getElementById('classCButton');
-const classBButton = document.getElementById('classBButton');
-const classAButton = document.getElementById('classAButton');
-const classUnderButton = document.getElementById('classUnderButton');
-
-classCButton.textContent = 'Class C IP off';
-classBButton.textContent = 'Class B IP off';
-classAButton.textContent = 'Class A IP off';
-classUnderButton.textContent = 'Class under IP off';
-}
-
-function generateRandomIP() {
-const selectedClasses = getSelectedClasses();
-const randomMask = getRandomMask(selectedClasses);
-const randomlyGeneratedIP = generateRandomIPWithMask(randomMask);
-document.getElementById('randomlyGeneratedIP').textContent = randomlyGeneratedIP;
-updatePracticeTable(randomlyGeneratedIP, randomMask);
-}
-
-function getSelectedClasses() {
-const classCButton = document.getElementById('classCButton');
-const classBButton = document.getElementById('classBButton');
-const classAButton = document.getElementById('classAButton');
-const classUnderButton = document.getElementById('classUnderButton');
-
-const selectedClasses = [];
-if (classCButton.textContent === 'Class C IP on') {
-    selectedClasses.push('C');
-}
-if (classBButton.textContent === 'Class B IP on') {
-    selectedClasses.push('B');
-}
-if (classAButton.textContent === 'Class A IP on') {
-    selectedClasses.push('A');
-}
-if (classUnderButton.textContent === 'Class under IP on') {
-    selectedClasses.push('Under');
-}
-
-return selectedClasses;
-}
-
-function getRandomMask(selectedClasses) {
-let minMask = 0;
-let maxMask = 30;
-
-if (selectedClasses.includes('C')) {
-    minMask = Math.max(minMask, 24);
-}
-if (selectedClasses.includes('B') && !selectedClasses.includes('C')) {
-    minMask = Math.max(minMask, 16);
-    maxMask = Math.min(maxMask, 23);
-}
-if (selectedClasses.includes('A') && !selectedClasses.includes('B') && !selectedClasses.includes('C')) {
-    minMask = Math.max(minMask, 8);
-    maxMask = Math.min(maxMask, 15);
-}
-if (selectedClasses.includes('Under') && !selectedClasses.includes('A') && !selectedClasses.includes('B') && !selectedClasses.includes('C')) {
-    maxMask = Math.min(maxMask, 7);
-}
-return Math.floor(Math.random() * (maxMask - minMask + 1)) + minMask;
+function getRandomMask(selected) {
+    const [min, max] = selected ? CLASS_RANGES[selected] : [0, 30];
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function generateRandomIPWithMask(mask) {
-const ip = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256));
-return ip.join('.') + '/' + mask;
+    const ip = Array.from({ length: 4 }, () => Math.floor(Math.random() * 256));
+    return ip.join('.') + '/' + mask;
 }
 
-function updatePracticeTable(randomlyGeneratedIP, randomMask) {
+if (typeof module !== 'undefined') {
+    module.exports = { calc, parseInput, calculateExpectedResults, getRandomMask, generateRandomIPWithMask, pad8 };
 }
 
-function checkResults() {
-const networkDecimal = document.getElementById('networkDecimal1').value;
-const networkBinary = document.getElementById('networkBinary1').value;
-const networkFullIp = document.getElementById('networkFullIp1').value;
-const broadcastDecimal = document.getElementById('broadcastDecimal1').value;
-const broadcastBinary = document.getElementById('broadcastBinary1').value;
-const broadcastFullIp = document.getElementById('broadcastFullIp1').value;
-const firstIPDecimal = document.getElementById('firstIPDecimal1').value;
-const firstIPBinary = document.getElementById('firstIPBinary1').value;
-const firstIPFullIp = document.getElementById('firstIPFullIp1').value;
-const lastIPDecimal = document.getElementById('lastIPDecimal1').value;
-const lastIPBinary = document.getElementById('lastIPBinary1').value;
-const lastIPFullIp = document.getElementById('lastIPFullIp1').value;
+/* ================= UI ================= */
 
-const validationResult = validateResults(networkDecimal, networkBinary, networkFullIp, broadcastDecimal, broadcastBinary, broadcastFullIp, firstIPDecimal, firstIPBinary, firstIPFullIp, lastIPDecimal, lastIPBinary, lastIPFullIp);
-}
+if (typeof document !== 'undefined') {
+    const $ = id => document.getElementById(id);
 
-function validateResults(networkDecimal, networkBinary, networkFullIp, broadcastDecimal, broadcastBinary, broadcastFullIp, firstIPDecimal, firstIPBinary, firstIPFullIp, lastIPDecimal, lastIPBinary, lastIPFullIp) {
-const randomlyGeneratedIP = document.getElementById('randomlyGeneratedIP').textContent;
-const randomMask = parseInt(randomlyGeneratedIP.split('/')[1]);
-const ipArray = randomlyGeneratedIP.split('/')[0].split('.').map(Number);
+    const ipCalculatorSection = $('ipCalculatorSection');
+    const practiceProgramSection = $('practiceProgramSection');
+    const resultOutput = $('resultOutput');
+    const ipInput = $('ipInput');
+    const h1Text = $('h1Text');
+    const subText = $('subText');
+    const tabs = document.querySelector('.tabs');
 
-const expectedResults = calculateExpectedResults(ipArray, randomMask);
+    /* ---------- Tabs ---------- */
+    const TITLES = {
+        calc: ['IP Subnet Calculator', 'Enter an IP with a CIDR mask and get everything about the subnet instantly.'],
+        practice: ['IP Calculation Practice', 'Generate a random IP, work out the subnet by hand, then check your answers.']
+    };
 
-let allFieldsCorrect = true;
-let incorrectValues = {};
+    function showSection(name) {
+        const isCalc = name === 'calc';
+        ipCalculatorSection.classList.toggle('hidden', !isCalc);
+        practiceProgramSection.classList.toggle('hidden', isCalc);
+        $('switchCalc').classList.toggle('active', isCalc);
+        $('switchPractice').classList.toggle('active', !isCalc);
+        $('switchCalc').setAttribute('aria-selected', String(isCalc));
+        $('switchPractice').setAttribute('aria-selected', String(!isCalc));
+        tabs.dataset.active = name;
+        h1Text.textContent = TITLES[name][0];
+        subText.textContent = TITLES[name][1];
+    }
+    $('switchCalc').addEventListener('click', () => showSection('calc'));
+    $('switchPractice').addEventListener('click', () => showSection('practice'));
 
-for (const field in expectedResults) {
-const inputValue = eval(field);
-const isCorrect = expectedResults[field] === inputValue;
+    /* ---------- Calculator ---------- */
+    function binHTML(arr, mask) {
+        const bits = arr.map(pad8).join('');
+        let out = '';
+        for (let i = 0; i < 32; i++) {
+            if (i > 0 && i % 8 === 0) out += '.';
+            out += `<span class="${i < mask ? 'n' : 'h'}">${bits[i]}</span>`;
+        }
+        return out;
+    }
 
-const inputField = document.getElementById(field + '1');
-inputField.style.color = isCorrect ? 'green' : 'red';
+    function card(label, arr, mask, wide) {
+        return `<div class="card${wide ? ' wide' : ''}">
+            <div class="k">${label}</div>
+            <div class="v">${arr.join('.')}</div>
+            <div class="bin">${binHTML(arr, mask)}</div>
+        </div>`;
+    }
 
-if (!isCorrect) {
-    allFieldsCorrect = false;
-    incorrectValues[field] = inputValue;
-}
-}
+    function statCard(label, value) {
+        return `<div class="card"><div class="k">${label}</div><div class="v">${value}</div></div>`;
+    }
 
-return allFieldsCorrect ? 'Results are correct!' : 'Some results are incorrect.';
-}
+    const legend = `<div class="legend"><span><i style="background:var(--accent)"></i>Network bits</span><span><i style="background:#a78bfa"></i>Host bits</span></div>`;
 
-function calculateExpectedResults(ipArray, randomMask) {
-const subnetMultiplier = Math.floor(randomMask / 8);
-const remainingBits = randomMask % 8;
-const steps = Math.pow(2, 8 - remainingBits);
-const lastOctetDecimal = ipArray[3];
+    function calculateSubnet() {
+        const parsed = parseInput(ipInput.value);
+        if (parsed.type === 'empty') { resultOutput.innerHTML = ''; return; }
+        if (parsed.type === 'error') {
+            resultOutput.innerHTML = `<div class="msg">${parsed.message}</div>`;
+            return;
+        }
 
-const network = Math.floor(lastOctetDecimal / steps) * steps;
-const broadcast = network + steps - 1;
-return {
-networkDecimal: network.toString(),
-networkBinary: ('00000000' + network.toString(2)).slice(-8),
-networkFullIp: ipArray.slice(0, 3).concat([network]).join('.'),
-broadcastDecimal: broadcast.toString(),
-broadcastBinary: ('00000000' + broadcast.toString(2)).slice(-8),
-broadcastFullIp: ipArray.slice(0, 3).concat([broadcast]).join('.'),
-firstIPDecimal: (network + 1).toString(),
-firstIPBinary: ('00000000' + (network + 1).toString(2)).slice(-8),
-firstIPFullIp: ipArray.slice(0, 3).concat([network + 1]).join('.'),
-lastIPDecimal: (broadcast - 1).toString(),
-lastIPBinary: ('00000000' + (broadcast - 1).toString(2)).slice(-8),
-lastIPFullIp: ipArray.slice(0, 3).concat([broadcast - 1]).join('.')
-};
+        if (parsed.type === 'mask') {
+            const r = calc([0, 0, 0, 0], parsed.mask);
+            resultOutput.innerHTML =
+                card('Subnet Mask', r.subnetMask, parsed.mask) +
+                card('Wildcard Mask', r.wildcard, parsed.mask) +
+                statCard('Total Hosts', r.total.toLocaleString('en-US')) +
+                statCard('Usable Hosts', r.usable.toLocaleString('en-US')) +
+                legend;
+            return;
+        }
+
+        const r = calc(parsed.ip, parsed.mask);
+        resultOutput.innerHTML =
+            card('Network', r.network, r.mask) +
+            card('Broadcast', r.broadcast, r.mask) +
+            card('First IP', r.first, r.mask) +
+            card('Last IP', r.last, r.mask) +
+            card('Subnet Mask', r.subnetMask, r.mask) +
+            card('Wildcard Mask', r.wildcard, r.mask) +
+            statCard('Total Hosts', r.total.toLocaleString('en-US')) +
+            statCard('Usable Hosts', r.usable.toLocaleString('en-US')) +
+            legend;
+    }
+
+    $('subnetForm').addEventListener('submit', e => { e.preventDefault(); calculateSubnet(); });
+    ipInput.addEventListener('input', calculateSubnet);
+
+    /* ---------- Practice ---------- */
+    let selectedClass = null;
+
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cls = chip.dataset.class;
+            selectedClass = selectedClass === cls ? null : cls;
+            document.querySelectorAll('.chip').forEach(c =>
+                c.setAttribute('aria-pressed', String(c.dataset.class === selectedClass)));
+        });
+    });
+
+    const FIELDS = ['network', 'broadcast', 'firstIP', 'lastIP']
+        .flatMap(k => ['Decimal', 'Binary', 'FullIp'].map(t => k + t));
+    const checkMessage = $('checkMessage');
+
+    function clearPractice() {
+        FIELDS.forEach(f => {
+            const el = $(f + '1');
+            el.value = '';
+            el.classList.remove('correct', 'wrong');
+        });
+        checkMessage.textContent = '';
+        checkMessage.className = 'check-message';
+    }
+
+    function generateRandomIP() {
+        const mask = getRandomMask(selectedClass);
+        $('randomlyGeneratedIP').textContent = generateRandomIPWithMask(mask);
+        clearPractice();
+    }
+    $('generateButton').addEventListener('click', generateRandomIP);
+
+    function normalize(field, value) {
+        const v = value.trim();
+        if (field.endsWith('Binary') && /^[01]{1,8}$/.test(v)) return v.padStart(8, '0');
+        return v;
+    }
+
+    function checkResults() {
+        const text = $('randomlyGeneratedIP').textContent;
+        if (!text.includes('/')) {
+            checkMessage.textContent = 'Generate an IP first.';
+            checkMessage.className = 'check-message fail';
+            return;
+        }
+        const [ipPart, maskPart] = text.split('/');
+        const expected = calculateExpectedResults(ipPart.split('.').map(Number), parseInt(maskPart, 10));
+
+        let correct = 0;
+        FIELDS.forEach(f => {
+            const el = $(f + '1');
+            const ok = normalize(f, el.value) === expected[f];
+            el.classList.toggle('correct', ok);
+            el.classList.toggle('wrong', !ok);
+            if (ok) correct++;
+        });
+
+        const all = correct === FIELDS.length;
+        checkMessage.textContent = all
+            ? 'Results are correct! 🎉'
+            : `Some results are incorrect (${correct}/${FIELDS.length} right).`;
+        checkMessage.className = 'check-message ' + (all ? 'ok' : 'fail');
+    }
+    $('checkResultButton').addEventListener('click', checkResults);
+
+    FIELDS.forEach(f => $(f + '1').addEventListener('input', e => e.target.classList.remove('correct', 'wrong')));
+
+    /* ---------- Footer ---------- */
+    const footerContainer = $('footerContainer');
+    const footerArrow = $('footerArrow');
+    let isFooterVisible = true;
+
+    function updateFooter() {
+        footerContainer.classList.toggle('active', isFooterVisible);
+        footerArrow.classList.toggle('hidden', isFooterVisible);
+        document.body.style.setProperty('--footer-h', isFooterVisible ? footerContainer.offsetHeight + 'px' : '0px');
+    }
+    footerArrow.addEventListener('click', () => { isFooterVisible = true; updateFooter(); });
+    footerContainer.addEventListener('click', e => {
+        if (e.target.closest('a')) return;
+        isFooterVisible = false;
+        updateFooter();
+    });
+    window.addEventListener('resize', updateFooter);
+
+    showSection('calc');
+    updateFooter();
 }
